@@ -65,6 +65,36 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
 
 //
+
+var db = null,
+    dbDetails = new Object();
+
+var initDb = function(callback) {
+  if (mongoURL == null) return;
+
+  var mongodb = require('mongodb');
+  if (mongodb == null) return;
+
+  mongoose.connect(mongoURL, function(err, conn) {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    db = conn;
+    dbDetails.databaseName = db.databaseName;
+    dbDetails.url = mongoURLLabel;
+    dbDetails.type = 'MongoDB';
+
+    console.log('Connected to MongoDB at: %s', mongoURL);
+  });
+};
+
+
+if (!db) {
+    initDb(function(err){});
+}
+
 app.use(express.static(__dirname + '/public'));                // set the static files location /public/img will be /img for users
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
@@ -72,7 +102,10 @@ app.use(bodyParser.json());                                     // parse applica
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 app.use(methodOverride());
 
-mongoose.connect(mongoURL);
+
+
+app.listen(port, ip);
+console.log('Server running on http://%s:%s', ip, port);
 
 var ArticleSchema = new mongoose.Schema({
 	title : String,
