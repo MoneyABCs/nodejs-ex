@@ -3,6 +3,32 @@ var express = require('express'),
     app     = express(),
     morgan  = require('morgan');
     
+////////////////////////////////////
+
+var fs = require('fs');
+var readline = require('readline');
+var googleAuth = require('google-auth-library');
+var mongoose = require('mongoose');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+
+
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var mongodb = require('mongodb');
+var passport = require('passport');
+var flash = require('connect-flash');
+var engines = require('consolidate');
+var nodemailer = require("nodemailer");
+var smtpTransport = require("nodemailer-smtp-transport");
+var configDB = require('./config/database.js');
+var open = require('open');  
+
+
+
+////////////////////////////
+
+
 Object.assign=require('object-assign')
 
 app.engine('html', require('ejs').renderFile);
@@ -101,6 +127,16 @@ initDb(function(err){
 
 app.listen(port, ip);
 console.log('Server running on http://%s:%s', ip, port);
+
+//
+app.use(express.static(__dirname + '/public'));                // set the static files location /public/img will be /img for users
+app.use(morgan('dev'));                                         // log every request to the console
+app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
+app.use(bodyParser.json());                                     // parse application/json
+app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+app.use(methodOverride());
+
+
 
 var ArticleSchema = new mongoose.Schema({
 	title : String,
