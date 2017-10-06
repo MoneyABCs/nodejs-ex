@@ -66,8 +66,7 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
 //
 
-var db = null,
-    dbDetails = new Object();
+
 
 var initDb = function(callback) {
   if (mongoURL == null) return;
@@ -81,19 +80,15 @@ var initDb = function(callback) {
       return;
     }
 
-    db = conn;
-    dbDetails.databaseName = db.databaseName;
-    dbDetails.url = mongoURLLabel;
-    dbDetails.type = 'MongoDB';
-
+    
     console.log('Connected to MongoDB at: %s', mongoURL);
   });
 };
 
 
-if (!db) {
-    initDb(function(err){});
-}
+
+initDb(function(err){});
+
 
 app.use(express.static(__dirname + '/public'));                // set the static files location /public/img will be /img for users
 app.use(morgan('dev'));                                         // log every request to the console
