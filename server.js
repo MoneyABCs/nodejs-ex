@@ -98,6 +98,16 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse applica
 app.use(methodOverride());
 
 
+app.get('/', function (req, res) {
+  // try to initialize the db on every request if it's not already
+  // initialized.
+  if (!db) {
+    initDb(function(err){});
+  }
+  
+    res.render('index.html', { pageCountMessage : null});
+  
+});
 
 app.listen(port, ip);
 console.log('Server running on http://%s:%s', ip, port);
