@@ -34,7 +34,7 @@ Object.assign=require('object-assign')
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 3002,
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 3009,
     ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -105,10 +105,10 @@ app.get('/', function (req, res) {
     // Create a document with request IP and current time of request
     col.insert({ip: req.ip, date: Date.now()});
     col.count(function(err, count){
-      res.render('index.html', { pageCountMessage : count, dbInfo: dbDetails });
+      res.render('index.html');
     });
   } else {
-    res.render('index.html', { pageCountMessage : null});
+    res.render('index.html');
   }
 });
 
@@ -808,10 +808,6 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
 
 /* google drive - End */
 
-
-var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
-var port = process.env.OPENSHIFT_NODEJS_PORT || 3002;
-app.listen(port,ip);
 
 
 
