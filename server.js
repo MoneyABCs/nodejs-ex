@@ -34,8 +34,8 @@ Object.assign=require('object-assign')
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
-    ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 3002,
+    ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
 
@@ -59,14 +59,10 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
   }
 }
 
-//console.log(mongoURL);
+console.log("mmmongo "+mongoURL);
 
-// error handling
-
-
-//
-
-
+var db = null,
+    dbDetails = new Object();
 
 var initDb = function(callback) {
   if (mongoURL == null) return;
@@ -74,20 +70,20 @@ var initDb = function(callback) {
   var mongodb = require('mongodb');
   if (mongodb == null) return;
 
-  mongoose.connect(mongoURL, function(err, conn) {
+  mongodb.connect(mongoURL, function(err, conn) {
     if (err) {
       callback(err);
       return;
     }
 
-    
+    db = conn;
+    dbDetails.databaseName = db.databaseName;
+    dbDetails.url = mongoURLLabel;
+    dbDetails.type = 'MongoDB';
+
     console.log('Connected to MongoDB at: %s', mongoURL);
   });
 };
-
-
-
-initDb(function(err){});
 
 
 app.use(express.static(__dirname + '/public'));                // set the static files location /public/img will be /img for users
@@ -104,9 +100,16 @@ app.get('/', function (req, res) {
   if (!db) {
     initDb(function(err){});
   }
-  
+  if (db) {
+    var col = db.collection('counts');
+    // Create a document with request IP and current time of request
+    col.insert({ip: req.ip, date: Date.now()});
+    col.count(function(err, count){
+      res.render('index.html', { pageCountMessage : count, dbInfo: dbDetails });
+    });
+  } else {
     res.render('index.html', { pageCountMessage : null});
-  
+  }
 });
 
 app.get('/pagecount', function (req, res) {
@@ -124,6 +127,7 @@ app.get('/pagecount', function (req, res) {
   }
 });
 
+// error handling
 app.use(function(err, req, res, next){
   console.error(err.stack);
   res.status(500).send('Something bad happened!');
@@ -135,6 +139,11 @@ initDb(function(err){
 
 app.listen(port, ip);
 console.log('Server running on http://%s:%s', ip, port);
+
+
+
+
+
 
 var ArticleSchema = new mongoose.Schema({
 	title : String,
